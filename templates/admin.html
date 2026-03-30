@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Entangled</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blood: #8B0000; --crimson: #C0392B; --gold: #C9A84C;
+      --gold-light: #E8C97A; --gold-dim: #7A6230;
+      --parchment: #1C0D08; --surface: #251008; --surface2: #2E1510;
+      --border-gold: rgba(201,168,76,0.35);
+      --text-gold: #E8C97A; --text-muted: #6A4E30;
+    }
+
+    body {
+      background: var(--parchment);
+      min-height: 100vh;
+      font-family: 'IM Fell English', serif;
+      color: var(--text-gold);
+      padding-bottom: 3rem;
+    }
+
+    /* ─── HEADER ─── */
+    .imperial-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border-gold);
+      padding: 1.25rem 1rem;
+      position: relative;
+      text-align: center;
+    }
+    .imperial-header::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--crimson), var(--gold), transparent);
+    }
+    .header-ornament { font-size: 10px; color: var(--gold-dim); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .header-title { font-family: 'Cinzel', serif; font-size: clamp(16px, 5vw, 22px); font-weight: 700; color: var(--text-gold); letter-spacing: 3px; text-transform: uppercase; }
+    .header-title span { color: var(--crimson); }
+    .header-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 2px; margin-top: 0.3rem; }
+    .corner-ornament { position: absolute; top: 10px; bottom: 10px; width: 32px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+    .corner-ornament.left { left: 10px; } .corner-ornament.right { right: 10px; }
+    .corner-ornament span { display: block; width: 16px; height: 16px; border: 1px solid var(--gold-dim); transform: rotate(45deg); opacity: 0.5; }
+    .corner-ornament span:nth-child(2) { width: 8px; height: 8px; opacity: 0.3; }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border-gold);
+      border-bottom: 1px solid var(--border-gold);
+      margin-bottom: 1.25rem;
+    }
+    @media (max-width: 480px) {
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+    .stat-card { background: var(--surface); padding: 0.85rem 0.75rem; text-align: center; }
+    .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .stat-value { font-family: 'Cinzel', serif; font-size: clamp(16px, 4vw, 20px); font-weight: 600; color: var(--text-gold); }
+    .stat-value.red { color: #FF7070; }
+    .stat-value.green { color: #6DBB6A; }
+
+    /* ─── FILTER ─── */
+    .filter-section { padding: 0 1rem; margin-bottom: 1.25rem; }
+    .filter-label {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 0.65rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .filter-label::before, .filter-label::after { content: ''; flex: 1; height: 1px; background: var(--border-gold); }
+    .filter-row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+    .filter-group {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: var(--surface); border: 1px solid var(--border-gold);
+      padding: 0.4rem 0.65rem; border-radius: 2px;
+      flex: 1; min-width: 120px;
+    }
+    .filter-group label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; white-space: nowrap; }
+    .filter-group select {
+      background: transparent; border: none;
+      color: var(--text-gold); font-family: 'IM Fell English', serif;
+      font-size: 12px; outline: none; cursor: pointer; width: 100%;
+    }
+    .filter-group select option { background: var(--surface2); color: var(--text-gold); }
+    .btn-filter {
+      background: var(--blood); border: 1px solid var(--gold-dim);
+      color: var(--gold-light); font-family: 'Cinzel', serif; font-size: 11px;
+      letter-spacing: 2px; padding: 0.5rem 1rem; cursor: pointer;
+      text-transform: uppercase; text-decoration: none; display: inline-block;
+      white-space: nowrap;
+    }
+    .btn-filter:hover { background: var(--crimson); }
+
+    /* ─── TABLE SECTION ─── */
+    .table-section { padding: 0 1rem; }
+    .table-header-line {
+      font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 0.65rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .table-header-line::before, .table-header-line::after { content: ''; flex: 1; height: 1px; background: var(--border-gold); }
+
+    /* ─── DESKTOP TABLE ─── */
+    .desktop-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    @media (max-width: 767px) { .desktop-table { display: none; } }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 780px; }
+    thead tr { background: #7A3010; border-bottom: 2px solid #C9A84C; }
+    thead th {
+      font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600;
+      letter-spacing: 2px; color: #FFE080; text-transform: uppercase;
+      padding: 0.8rem 0.9rem; text-align: left; white-space: nowrap;
+    }
+    tbody tr { background: #F5ECD8; border-bottom: 1px solid #D4B88A; transition: background 0.15s; }
+    tbody tr:nth-child(even) { background: #EDE0C4; }
+    tbody tr:hover { background: #E8D5AA; }
+    tbody tr.paid { background: #D4EDDA; border-bottom: 1px solid #A8D4B0; }
+    tbody tr.paid:nth-child(even) { background: #C5E4CC; }
+    tbody tr.paid:hover { background: #B8DCC2; }
+    tbody tr.row-cash { background: #E8F5D4; border-bottom: 1px solid #B8D890; }
+    tbody tr.row-cash:hover { background: #DAEEC4; }
+    tbody tr.row-transfer { background: #D4E4F5; border-bottom: 1px solid #A0C0E8; }
+    tbody tr.row-transfer:hover { background: #C4D8EE; }
+    tbody td { padding: 0.7rem 0.9rem; vertical-align: middle; }
+    .td-id { font-family: 'Cinzel', serif; font-size: 11px; color: #7A5030; }
+    .td-name { color: #3A1A08; font-size: 13px; }
+    .td-seat {
+      font-family: 'Cinzel', serif; font-size: 12px; color: #7A3010;
+      background: rgba(139,0,0,0.08); border: 1px solid rgba(139,0,0,0.25);
+      padding: 2px 8px; border-radius: 2px; display: inline-block;
+    }
+    .td-phone { color: #5A3A20; font-size: 12px; }
+    .td-class { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #6A4020; }
+    .td-time { font-size: 11px; color: #806040; }
+
+    .select-payment {
+      font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+      text-transform: uppercase; padding: 4px 6px; border-radius: 2px;
+      cursor: pointer; outline: none; transition: background 0.2s, border 0.2s;
+    }
+    .select-payment.val-cash { background: #C8EAA0; border: 1px solid #8ABE50; color: #2A5A10; }
+    .select-payment.val-transfer { background: #A8C8F0; border: 1px solid #5090D0; color: #0A3A78; }
+    .select-payment.val-none { background: #EDE0C4; border: 1px solid #C4A870; color: #7A5030; }
+    .select-payment option { background: #fff; color: #333; }
+
+    .paid-toggle {
+      appearance: none; -webkit-appearance: none;
+      width: 18px; height: 18px; border: 1px solid #A08060;
+      background: #FFF8EE; cursor: pointer; position: relative; transition: all 0.2s;
+    }
+    .paid-toggle:checked { background: var(--blood); border-color: var(--gold); }
+    .paid-toggle:checked::after { content: '✓'; position: absolute; top: -2px; left: 2px; color: var(--gold-light); font-size: 13px; }
+
+    .btn-download {
+      background: transparent; border: 1px solid #A08040; color: #7A5020;
+      font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+      padding: 3px 8px; cursor: pointer; text-decoration: none; display: inline-block;
+    }
+    .btn-download:hover { background: rgba(160,128,64,0.15); }
+    .btn-delete {
+      background: transparent; border: 1px solid #D09090; color: #A03030;
+      font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+      padding: 4px 10px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-delete:hover { background: rgba(180,50,50,0.15); color: #C03030; border-color: #C03030; }
+
+    /* ─── MOBILE CARDS ─── */
+    .mobile-cards { display: none; }
+    @media (max-width: 767px) { .mobile-cards { display: flex; flex-direction: column; gap: 0.75rem; } }
+
+    .order-card {
+      background: #F5ECD8;
+      border: 1px solid #D4B88A;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .order-card.paid { background: #D4EDDA; border-color: #A8D4B0; }
+    .order-card.row-cash { background: #E8F5D4; border-color: #B8D890; }
+    .order-card.row-transfer { background: #D4E4F5; border-color: #A0C0E8; }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.85rem;
+      background: #7A3010;
+      border-bottom: 1px solid #C9A84C;
+    }
+    .card-id { font-family: 'Cinzel', serif; font-size: 11px; color: #FFE080; letter-spacing: 1px; }
+    .card-seat {
+      font-family: 'Cinzel', serif; font-size: 12px; color: #FFE080;
+      background: rgba(201,168,76,0.2); border: 1px solid rgba(201,168,76,0.5);
+      padding: 2px 10px; border-radius: 2px;
+    }
+
+    .card-body { padding: 0.75rem 0.85rem; }
+    .card-name { color: #3A1A08; font-size: 15px; margin-bottom: 0.3rem; font-weight: bold; }
+    .card-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin-bottom: 0.65rem; }
+    .card-meta-item { font-size: 11px; color: #6A4020; letter-spacing: 0.5px; }
+    .card-meta-item span { color: #5A3A20; }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      align-items: center;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+    .card-action-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-action-label { font-size: 10px; color: #8A6040; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+
+    .card-paid-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .card-paid-label { font-size: 10px; color: #8A6040; letter-spacing: 1px; text-transform: uppercase; }
+    .card-btn-group { display: flex; gap: 0.4rem; }
+
+    .mobile-select-payment {
+      font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px;
+      text-transform: uppercase; padding: 5px 8px; border-radius: 2px;
+      cursor: pointer; outline: none; width: 100%;
+      transition: background 0.2s;
+    }
+    .mobile-select-payment.val-cash { background: #C8EAA0; border: 1px solid #8ABE50; color: #2A5A10; }
+    .mobile-select-payment.val-transfer { background: #A8C8F0; border: 1px solid #5090D0; color: #0A3A78; }
+    .mobile-select-payment.val-none { background: #EDE0C4; border: 1px solid #C4A870; color: #7A5030; }
+    .mobile-select-payment option { background: #fff; color: #333; }
+
+    .mobile-paid-toggle {
+      appearance: none; -webkit-appearance: none;
+      width: 22px; height: 22px; border: 1px solid #A08060;
+      background: #FFF8EE; cursor: pointer; position: relative; transition: all 0.2s;
+      flex-shrink: 0; border-radius: 2px;
+    }
+    .mobile-paid-toggle:checked { background: var(--blood); border-color: var(--gold); }
+    .mobile-paid-toggle:checked::after { content: '✓'; position: absolute; top: -1px; left: 3px; color: var(--gold-light); font-size: 15px; }
+
+    .mobile-btn-download {
+      background: transparent; border: 1px solid #A08040; color: #7A5020;
+      font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+      padding: 5px 10px; cursor: pointer; text-decoration: none;
+      display: inline-block; white-space: nowrap;
+    }
+    .mobile-btn-delete {
+      background: transparent; border: 1px solid #D09090; color: #A03030;
+      font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px;
+      padding: 5px 10px; cursor: pointer; white-space: nowrap;
+    }
+
+    /* ─── MISC ─── */
+    .divider-ornament { text-align: center; color: var(--gold-dim); font-size: 14px; letter-spacing: 8px; padding: 1rem 0 0.5rem; opacity: 0.5; }
+    .footer-note { text-align: center; font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; padding: 1.5rem 1rem 0; opacity: 0.6; }
+
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1rem; left: 1rem;
+      background: var(--surface); border: 1px solid var(--border-gold);
+      color: var(--text-gold); font-family: 'Cinzel', serif; font-size: 12px;
+      letter-spacing: 1px; padding: 0.75rem 1.25rem; opacity: 0;
+      transition: opacity 0.3s; pointer-events: none; z-index: 999;
+      text-align: center;
+    }
+    @media (min-width: 480px) { .toast { left: auto; min-width: 220px; } }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <div class="imperial-header">
+    <div class="corner-ornament left"><span></span><span></span><span></span></div>
+    <div class="corner-ornament right"><span></span><span></span><span></span></div>
+    <div class="header-ornament">✦ &nbsp; A Doremi Production &nbsp; ✦</div>
+    <div class="header-title">Entangled &nbsp;— <span>Admin</span></div>
+    <div class="header-sub">Data Pembelian Tiket &nbsp;·&nbsp; 13 April 2026</div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Total Tiket</div>
+      <div class="stat-value">{{ data | length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sudah Bayar</div>
+      <div class="stat-value green">{{ data | selectattr('7', 'equalto', 1) | list | length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Belum Bayar</div>
+      <div class="stat-value red">{{ data | selectattr('7', 'equalto', 0) | list | length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Transfer</div>
+      <div class="stat-value">{{ data | selectattr('8', 'equalto', 'transfer') | list | length }}</div>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-label">Saring Data</div>
+    <form method="GET" action="/admin" class="filter-row">
+      <input type="hidden" name="key" value="entangled123">
+      <div class="filter-group">
+        <label>Payment</label>
+        <select name="payment">
+          <option value="">Semua</option>
+          <option value="cash" {% if request.args.get('payment') == 'cash' %}selected{% endif %}>Cash</option>
+          <option value="transfer" {% if request.args.get('payment') == 'transfer' %}selected{% endif %}>Transfer</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Status</label>
+        <select name="paid">
+          <option value="">Semua</option>
+          <option value="1" {% if request.args.get('paid') == '1' %}selected{% endif %}>Sudah Bayar</option>
+          <option value="0" {% if request.args.get('paid') == '0' %}selected{% endif %}>Belum Bayar</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-filter">Filter</button>
+      <a href="/admin?key=entangled123" class="btn-filter">↺ Reset</a>
+    </form>
+  </div>
+
+  <div class="table-section">
+    <div class="table-header-line">Daftar Pemesanan</div>
+
+    <!-- DESKTOP TABLE (≥768px) -->
+    <div class="desktop-table">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nama</th>
+            <th>Seat</th>
+            <th>Telepon</th>
+            <th>Kelas</th>
+            <th>Waktu</th>
+            <th>Bukti</th>
+            <th>Payment</th>
+            <th>Lunas</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in data %}
+          <tr class="{% if row[7] == 1 %}paid{% elif row[8] == 'cash' %}row-cash{% elif row[8] == 'transfer' %}row-transfer{% endif %}">
+            <td class="td-id">#{{ '%03d' % row[0] }}</td>
+            <td class="td-name">{{ row[1] }}</td>
+            <td><span class="td-seat">{{ row[2] }}</span></td>
+            <td class="td-phone">{{ row[3] }}</td>
+            <td class="td-class">{{ row[4] }}</td>
+            <td class="td-time">{{ row[5] }}</td>
+            <td>
+              {% if row[6] %}
+                <a class="btn-download" href="/static/uploads/{{ row[6] }}" target="_blank">↓ Unduh</a>
+              {% else %}
+                <span style="color:#B0906A;font-size:11px;">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <select class="select-payment val-{{ row[8] if row[8] else 'none' }}"
+                      onchange="updatePayment({{ row[0] }}, this)">
+                <option value="" {% if not row[8] %}selected{% endif %}>— Pilih —</option>
+                <option value="cash" {% if row[8] == 'cash' %}selected{% endif %}>Cash</option>
+                <option value="transfer" {% if row[8] == 'transfer' %}selected{% endif %}>Transfer</option>
+              </select>
+            </td>
+            <td style="text-align:center">
+              <input type="checkbox" class="paid-toggle"
+                     onchange="updatePaid({{ row[0] }}, this.checked)"
+                     {% if row[7] == 1 %}checked{% endif %}>
+            </td>
+            <td>
+              <form action="/delete/{{ row[0] }}?key=entangled123" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
+                <button type="submit" class="btn-delete">✕ Hapus</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MOBILE CARDS (<768px) -->
+    <div class="mobile-cards">
+      {% for row in data %}
+      <div class="order-card {% if row[7] == 1 %}paid{% elif row[8] == 'cash' %}row-cash{% elif row[8] == 'transfer' %}row-transfer{% endif %}"
+           id="card-{{ row[0] }}">
+
+        <div class="card-header">
+          <span class="card-id">#{{ '%03d' % row[0] }}</span>
+          <span class="card-seat">{{ row[2] }}</span>
+        </div>
+
+        <div class="card-body">
+          <div class="card-name">{{ row[1] }}</div>
+          <div class="card-meta">
+            <div class="card-meta-item">📞 <span>{{ row[3] }}</span></div>
+            <div class="card-meta-item">🎭 <span>{{ row[4] }}</span></div>
+            <div class="card-meta-item">🕐 <span>{{ row[5] }}</span></div>
+          </div>
+
+          <!-- Payment Method -->
+          <div class="card-action-row" style="margin-bottom:0.5rem;">
+            <span class="card-action-label">Metode:</span>
+            <select class="mobile-select-payment val-{{ row[8] if row[8] else 'none' }}"
+                    onchange="updatePayment({{ row[0] }}, this)">
+              <option value="" {% if not row[8] %}selected{% endif %}>— Pilih —</option>
+              <option value="cash" {% if row[8] == 'cash' %}selected{% endif %}>Cash</option>
+              <option value="transfer" {% if row[8] == 'transfer' %}selected{% endif %}>Transfer</option>
+            </select>
+          </div>
+
+          <!-- Lunas + Actions -->
+          <div class="card-paid-row">
+            <div class="card-action-row">
+              <input type="checkbox" class="mobile-paid-toggle"
+                     onchange="updatePaid({{ row[0] }}, this.checked)"
+                     {% if row[7] == 1 %}checked{% endif %}>
+              <span class="card-paid-label">Lunas</span>
+            </div>
+            <div class="card-btn-group">
+              {% if row[6] %}
+                <a class="mobile-btn-download" href="/static/uploads/{{ row[6] }}" target="_blank">↓ Bukti</a>
+              {% endif %}
+              <form action="/delete/{{ row[0] }}?key=entangled123" method="POST"
+                    onsubmit="return confirm('Yakin hapus data ini?')" style="display:inline;">
+                <button type="submit" class="mobile-btn-delete">✕ Hapus</button>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="divider-ornament">— ✦ —</div>
+    <div class="footer-note">Entangled &nbsp;·&nbsp; doremination.art &nbsp;·&nbsp; LT.3 Aula Atisa Dipamkara</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function updatePayment(id, el) {
+      const val = el.value;
+      // Update semua select payment untuk row/card yang sama
+      document.querySelectorAll(`[onchange="updatePayment(${id}, this)"]`).forEach(sel => {
+        sel.className = sel.className.replace(/val-\S+/, '') + ' val-' + (val || 'none');
+        sel.value = val;
+      });
+
+      fetch(`/update_payment/${id}?key=entangled123`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_method: val })
+      })
+      .then(res => {
+        if (res.ok || res.status === 204) {
+          showToast('✓ Metode bayar diperbarui');
+          // Update row/card class
+          updateRowClass(id);
+        } else {
+          showToast('✕ Gagal update metode bayar');
+        }
+      })
+      .catch(() => showToast('✕ Gagal terhubung ke server'));
+    }
+
+    function updatePaid(id, status) {
+      fetch(`/update_paid/${id}?key=entangled123`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paid: status ? 1 : 0 })
+      })
+      .then(res => {
+        if (res.ok || res.status === 204) {
+          showToast(status ? '✓ Ditandai lunas' : '✓ Ditandai belum lunas');
+          // Sync semua checkbox untuk id yang sama
+          document.querySelectorAll(`[onchange="updatePaid(${id}, this.checked)"]`).forEach(cb => {
+            cb.checked = status;
+          });
+          updateRowClass(id);
+        } else {
+          showToast('✕ Gagal update status');
+        }
+      })
+      .catch(() => showToast('✕ Gagal terhubung ke server'));
+    }
+
+    function updateRowClass(id) {
+      const checkbox = document.querySelector(`[onchange="updatePaid(${id}, this.checked)"]`);
+      if (!checkbox) return;
+      const isPaid = checkbox.checked;
+      const paymentSel = document.querySelector(`[onchange="updatePayment(${id}, this)"]`);
+      const payVal = paymentSel ? paymentSel.value : '';
+      const newClass = isPaid ? 'paid' : (payVal === 'cash' ? 'row-cash' : payVal === 'transfer' ? 'row-transfer' : '');
+
+      // Update <tr> di desktop table
+      const row = checkbox.closest('tr');
+      if (row) row.className = newClass;
+
+      // Update card di mobile
+      const card = document.getElementById(`card-${id}`);
+      if (card) card.className = 'order-card ' + newClass;
+    }
+  </script>
+
+</body>
+</html>

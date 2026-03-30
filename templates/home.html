@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entangled</title>
+
+    <style>
+        /* ===== BASE (desktop, > 1200px) ===== */
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: serif;
+        }
+
+        .container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .section {
+            height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+        }
+
+        /* ===== NAVBAR ===== */
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 80px;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            letter-spacing: 1px;
+            transition: .3s;
+        }
+
+        .navbar a:hover {
+            color: #e8c46b;
+        }
+
+        /* ===== HERO ===== */
+
+        .hero {
+            background-image: url("{{ url_for('static', filename='img/BACKDROP DRAMA.png') }}");
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+
+        .deco { position: absolute; pointer-events: none; }
+
+        .bamboo-left  { left: 0; bottom: 0; height: 100%; }
+        .bamboo-right { right: 0; bottom: 0; height: 100%; }
+        .swirl-left   { left: 0; bottom: -40%; width: 55%; }
+        .swirl-right  { right: -32px; bottom: -40%; width: 55%; }
+
+        .hero-center {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .title     { width: 950px; max-width: 92vw; }
+        .gold-line { width: 1000px; margin-top: -250px; }
+
+        /* ===== PAGE 2 ===== */
+
+        .page2 {
+            background-image: url("{{ url_for('static', filename='img/bg_2.png') }}");
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .p2-swords {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            transform: translateX(-50%);
+            width: 80%;
+            z-index: 5;
+        }
+
+        .p2-moon {
+            position: absolute;
+            bottom: 0;
+            left: 0%;
+            transform: translateX(-50%);
+            width: 100%;
+            z-index: 2;
+        }
+
+        .p2-center {
+            position: absolute;
+            top: 42%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 6;
+        }
+
+        .p2-prod  { margin-top: -575px; width: 5000px; max-width: 100vw; }
+        .p2-title { margin-top: 150px; width: 1500px; max-width: 90vw; }
+
+        /* ===== SYNOPSIS ===== */
+
+        .synopsis {
+            background-image: url("{{ url_for('static', filename='img/bg_synopsis.png') }}");
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .syn-moon {
+            position: absolute;
+            bottom: 15.5%;
+            left: 0%;
+            transform: translateX(-50%);
+            width: 101%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .syn-center {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .syn-title {
+            width: 1300px;
+            max-width: 500vw;
+            margin-bottom: -275px;
+        }
+
+        .syn-text {
+            max-width: 800px;
+            color: white;
+            font-size: 22px;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+        }
+
+        .mobile-break { display: none; }
+
+        /* ===== TICKETS ===== */
+
+        .tickets { position: relative; overflow: hidden; isolation: isolate; }
+
+        .ticket-bg {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; pointer-events: none;
+        }
+
+        .ticket-flames {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover; z-index: 2; pointer-events: none;
+        }
+
+        .ticket-swords {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover; z-index: 2; pointer-events: none;
+        }
+
+        .ticket-info {
+            position: absolute;
+            top: 80px; right: 60px;
+            text-align: right;
+            z-index: 5;
+        }
+
+        .ticket-save     { color: #e8c46b; font-size: 23px; letter-spacing: 2px; margin-bottom: 10px; }
+        .ticket-location { color: white; font-size: 15px; margin-bottom: 8px; }
+        .ticket-date     { color: #ff3b3b; font-size: 35px; letter-spacing: 3px; font-weight: bold; }
+
+        .ticket-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 6;
+        }
+
+        .ticket-title { width: 1300px; max-width: 100vw; margin-bottom: -100px; }
+
+        .ticket-btn {
+            text-decoration: none;
+            background: linear-gradient(to bottom, #c21c00, #7a0c00);
+            color: white;
+            padding: 18px 50px;
+            font-size: 22px;
+            border-radius: 40px;
+            transition: .3s;
+        }
+
+        .ticket-btn:hover { transform: scale(1.05); }
+
+        /* ===== CINEMATIC SCROLL ANIMATION ===== */
+
+        .fade-element {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: all 1.2s ease;
+        }
+
+        .fade-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+	/* ===== CONTACT FLOATING BUTTON + BOX ===== */
+.contact-wrapper {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    z-index: 9999;
+    font-family: serif;
+}
+
+.contact-btn {
+    background: linear-gradient(to bottom, #800000, #4b0000);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 40px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    transition: 0.3s;
+}
+
+.contact-btn:hover {
+    transform: scale(1.08);
+}
+
+/* Hidden box */
+.contact-box {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 260px;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(6px);
+    border-radius: 15px;
+    padding: 15px;
+    color: white;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: 0.3s;
+}
+
+/* Active state */
+.contact-wrapper.active .contact-box {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* WhatsApp links */
+.contact-box a {
+    display: block;
+    margin-top: 10px;
+    padding: 10px;
+    background: #25D366;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.contact-box a:hover {
+    background: #1ebe5d;
+}
+
+	/* ==========================================================
+           iPad Pro (1366px)
+           ========================================================== */
+        @media (max-width: 1366px) {
+
+            .hero-center { top: 25%; }
+            .title { width: 75vw; max-width: 800px; }
+            .gold-line { width: 80vw; max-width: none; margin-top: -20vh; }
+
+            .bamboo-left, .bamboo-right { height: 100%; width: 40%; opacity: 0.85; }
+            .bamboo-left  { left: -10vw; }
+            .bamboo-right { right: -10vw; }
+            .swirl-left  { width: 50vw; bottom: -20%; }
+            .swirl-right { width: 50vw; bottom: -20%; }
+
+            .p2-swords { width: 100vw; left: 0%; top: 10%; transform: translateX(-50%); }
+            .p2-moon   { width: 130%; bottom: 0; left: -15%; }
+            .p2-center { top: 62%; }
+            .p2-title  { margin-top: -20%; width: 100vw; max-width: 100vw; }
+            .p2-prod   { width: 100vw; max-width: 100vw; margin-top: -35vw; }
+
+            .syn-title { width: 180%; margin-bottom: -180px;}
+            .syn-text  { font-size: 20px; max-width: 600px; }
+            .syn-moon  { bottom: 28%; left: -15%; width: 130%; }
+
+            .ticket-title    { width: 900px; }
+            .ticket-info     { right: 30px; top: 80px; }
+            .ticket-date     { font-size: 28px; }
+            .ticket-save     { font-size: 18px; }
+            .ticket-location { font-size: 13px; }
+            .ticket-btn      { font-size: 18px; padding: 14px 40px; }
+        }
+
+
+        /* ==========================================================
+           TABLET  (768px – 1200px)
+           ========================================================== */
+        @media (max-width: 1200px) and (min-width: 768px) {
+
+            .hero-center { top: 25%; }
+            .title { width: 75vw; max-width: 800px; }
+            .gold-line { width: 80vw; max-width: none; margin-top: -20vh; }
+
+            .bamboo-left, .bamboo-right { height: 100%; width: 40%; opacity: 0.85; }
+            .bamboo-left  { left: -10vw; }
+            .bamboo-right { right: -10vw; }
+            .swirl-left  { width: 50vw; bottom: -20%; }
+            .swirl-right { width: 50vw; bottom: -20%; }
+
+            .p2-swords { width: 100vw; left: 0%; top: 10%; transform: translateX(-50%); }
+            .p2-moon   { width: 130%; bottom: 0; left: -15%; }
+            .p2-center { top: 62%; }
+            .p2-title  { margin-top: -20%; width: 100vw; max-width: 100vw; }
+            .p2-prod   { width: 100vw; max-width: 100vw; margin-top: -35vw; }
+
+            .syn-title { width: 180%; margin-bottom: -180px;}
+            .syn-text  { font-size: 20px; max-width: 600px; }
+            .syn-moon  { bottom: 28%; left: -15%; width: 130%; }
+
+            .ticket-title    { width: 900px; }
+            .ticket-info     { right: 30px; top: 80px; }
+            .ticket-date     { font-size: 28px; }
+            .ticket-save     { font-size: 18px; }
+            .ticket-location { font-size: 13px; }
+            .ticket-btn      { font-size: 18px; padding: 14px 40px; }
+        }
+
+        /* ==========================================================
+           MOBILE  (<=767px)
+           ========================================================== */
+        @media (max-width: 767px) {
+
+            /* --- hero --- */
+            .hero-center { top: 25%; }
+            .title       { width: 130vw; max-width: none; }
+            .gold-line   { width: 150vw; max-width: none; margin-top: 10vw; }
+            .bamboo-left, .bamboo-right { display: none !important; }
+            .swirl-left  { width: 70vw; bottom: -10%; left: -15%; }
+            .swirl-right { width: 70vw; bottom: -10%; right: -15%; }
+
+            /* --- page 2 --- */
+            .p2-swords {
+                top: 200px;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 150vw;
+            }
+
+            /* FIX: .fade-element.visible sets transform:translateY(0) which
+               overwrites translateX(-50%), snapping elements off-center.
+               Restore the horizontal centering on all affected elements. */
+            .p2-swords.visible {
+                transform: translateX(-50%) !important;
+            }
+
+            .p2-center {
+                top: 60%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+            }
+
+            .p2-title {
+                width: 150vw;
+                max-width: 120vw;
+                margin-top: -10%;
+            }
+
+            .p2-prod {
+                width: 160vw;
+                max-width: 150vw;
+                margin-top: -35vw;
+            }
+
+            .p2-moon {
+                width: 200%;
+                bottom: 0;
+                left: -50%;
+                transform: none;
+            }
+
+            .p2-moon.visible {
+                transform: none !important;
+            }
+
+            /* --- synopsis --- */
+            .syn-center { top: 48%; padding: 0 20px; }
+            .syn-title  { width: 150vw; margin-top: 10vw; margin-bottom: -5vw; }
+            .syn-text   { font-size: 14px; line-height: 1.6; margin-top: -30vw; max-width: 88vw; }
+            .mobile-break { display: block; }
+
+            .syn-moon { bottom: 62%; left: -50%; transform: none; width: 200%; }
+
+            .syn-moon.visible {
+                transform: none !important;
+            }
+
+            /* --- tickets --- */
+            .ticket-title    { width: 88vw; max-width: none; margin-bottom: -20px; }
+            .ticket-info     { top: 80px; right: 16px; left: auto; text-align: right; }
+            .ticket-save     { font-size: 14px; letter-spacing: 1px; margin-bottom: 4px; }
+            .ticket-location { font-size: 11px; margin-bottom: 4px; }
+            .ticket-date     { font-size: 20px; letter-spacing: 2px; }
+            .ticket-btn      { font-size: 15px; padding: 12px 24px; }
+
+            .section { overflow: hidden; }
+
+	/* ===== CONTACT FLOATING BUTTON + BOX ===== */
+	.contact-wrapper {
+    	position: fixed;
+    	bottom: 25px;
+    	right: 25px;
+    	z-index: 9999;
+    	font-family: serif;
+	}
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <a href="#home">Home</a>
+        <a href="#synopsis">Synopsis</a>
+        <a href="#tickets">Tickets</a>
+    </div>
+
+    <div class="container" id="scrollContainer">
+
+        <!-- ===== HERO ===== -->
+        <section class="section hero">
+            <img src="{{ url_for('static', filename='img/bamboo left.png') }}"           class="deco bamboo-left fade-element">
+            <img src="{{ url_for('static', filename='img/bamboo right.png') }}"          class="deco bamboo-right fade-element">
+            <img src="{{ url_for('static', filename='img/swirly red gold left.png') }}"  class="deco swirl-left fade-element">
+            <img src="{{ url_for('static', filename='img/swirly red gold right.png') }}" class="deco swirl-right fade-element">
+            <div class="hero-center">
+                <img src="{{ url_for('static', filename='img/title text.png') }}"            class="title fade-element">
+                <img src="{{ url_for('static', filename='img/gold line under title.png') }}" class="gold-line fade-element">
+            </div>
+        </section>
+
+        <!-- ===== PAGE 2 ===== -->
+        <section class="section page2" id="home">
+            <img src="{{ url_for('static', filename='img/swords_2.png') }}"       class="p2-swords fade-element">
+            <img src="{{ url_for('static', filename='img/red_blood_moon.png') }}" class="p2-moon fade-element">
+            <div class="p2-center">
+                <img src="{{ url_for('static', filename='img/title_page_2.png') }}"        class="p2-title fade-element">
+                <img src="{{ url_for('static', filename='img/a_doremi_production.png') }}" class="p2-prod fade-element">
+            </div>
+        </section>
+
+        <!-- ===== SYNOPSIS ===== -->
+        <section class="section synopsis" id="synopsis">
+            <img src="{{ url_for('static', filename='img/red_blood_moon_bottom.png') }}" class="syn-moon fade-element">
+            <div class="syn-center">
+                <img src="{{ url_for('static', filename='img/title_synopsis.png') }}" class="syn-title fade-element">
+                <p class="syn-text fade-element">
+                    Tiga sahabat yang tumbuh bersama di istana<br class="mobile-break">
+                    dan memiliki janji masa kecil tentang masa depan mereka.<br class="mobile-break"><br class="mobile-break">
+
+                    Namun, sebuah tragedi membuat mereka terpisah<br class="mobile-break">
+                    dan menjalani jalan hidup yang berbeda.<br class="mobile-break"><br class="mobile-break">
+
+                    Bertahun-tahun kemudian, takdir mempertemukan mereka kembali<br class="mobile-break">
+                    di tengah konflik kekaisaran<br class="mobile-break">
+                    dan rahasia masa lalu yang belum terselesaikan.<br class="mobile-break"><br class="mobile-break">
+
+                    Di antara persahabatan, janji, dan pilihan yang sulit,<br class="mobile-break">
+                    mampukah mereka mempertahankan janji masa kecil mereka<br class="mobile-break">
+                    dan menentukan nasib mereka sendiri?
+                </p>
+            </div>
+        </section>
+
+        <!-- ===== TICKETS ===== -->
+        <section class="section tickets" id="tickets">
+            <img src="{{ url_for('static', filename='img/bg_ticket.png') }}"            class="ticket-bg">
+            <img src="{{ url_for('static', filename='img/swords-bottom_ticket.png') }}" class="ticket-swords">
+            <img src="{{ url_for('static', filename='img/flames-top_ticket.png') }}"    class="ticket-flames">
+            <div class="ticket-info">
+                <div class="ticket-save">SAVE THE DATE!</div>
+                <div class="ticket-location">LT.3 AULA ATISA DIPAMKARA</div>
+                <div class="ticket-date">13 APRIL 2026</div>
+            </div>
+            <div class="ticket-center">
+                <img src="{{ url_for('static', filename='img/title_page_2.png') }}" class="ticket-title fade-element">
+                <a href="{{ url_for('buy') }}" class="ticket-btn fade-element">
+                    I WANT TO BUY TICKET (≧▽≦)
+                </a>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                } else {
+                    entry.target.classList.remove("visible");
+                }
+            });
+        }, { threshold: 0.35 });
+
+        document.querySelectorAll(".fade-element").forEach(el => {
+            observer.observe(el);
+        });
+
+	function toggleContact() {
+	    document.getElementById("contactWrapper").classList.toggle("active");
+	}
+    </script>
+
+<div class="contact-wrapper" id="contactWrapper">
+    
+    <div class="contact-box">
+        <strong>Contact Us</strong>
+        
+        <a href="https://wa.me/6281344905764" target="_blank">
+            Valerie (Whatsapp)
+        </a>
+        
+        <a href="https://wa.me/6289635999002" target="_blank">
+            Ferdinand (Whatsapp)
+        </a>
+    </div>
+
+    <button class="contact-btn" onclick="toggleContact()">
+        Contact Us
+    </button>
+
+</div>
+</body>
+</html>

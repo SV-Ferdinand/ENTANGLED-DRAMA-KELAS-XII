@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Buy Tickets</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== BASE ===== */
+
+        body {
+            margin: 0;
+            font-family: 'Libre Baskerville', serif;
+            color: white;
+            background: url("{{ url_for('static', filename='img/bg_buy.png') }}") center/cover no-repeat fixed;
+        }
+
+        /* ===== PROGRESS ===== */
+
+        .progress {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .step {
+            opacity: 0.4;
+        }
+
+        .step.active {
+            opacity: 1;
+            color: #e8c46b;
+        }
+
+        .line {
+            width: 40px;
+            height: 2px;
+            background: #777;
+        }
+
+        /* ===== LAYOUT ===== */
+
+        .main-layout {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 80px;
+            padding: 40px;
+        }
+
+        /* LEFT */
+        .container {
+            position: relative;
+            text-align: center;
+            flex: 0 0 55%;
+        }
+
+        /* RIGHT */
+        .side-image {
+            flex: 0 0 45%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .side-image img {
+            width: 350px;
+            max-width: 100%;
+            margin-top: -5%;
+            opacity: 0.95;
+        }
+
+        /* ===== STAGE ===== */
+
+        .stage {
+            width: 80%;
+            margin-bottom: -100px;
+            margin-left: 25%;
+            margin-top: -15%;
+        }
+
+        /* ===== WALKWAY LABEL ===== */
+
+        .walkway-label {
+            position: absolute;
+            top: 50%;
+            left: 65%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .walkway-label img {
+            height: 250px;
+        }
+
+        /* ===== SEATS ===== */
+
+        .seat-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 30%;
+            margin-top: 5%;
+            gap: 5px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .seat {
+            width: 55px;
+            height: 22.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .royal   { background-image: url("{{ url_for('static', filename='img/gold_button.png') }}"); }
+        .warrior { background-image: url("{{ url_for('static', filename='img/red_button.png') }}"); }
+        .taken   { background-image: url("{{ url_for('static', filename='img/grey_button.png') }}"); cursor: not-allowed; }
+
+        .selected { outline: 2px solid white; }
+
+        .gap { width: 50px; }
+
+        /* ===== BUTTON ===== */
+
+        .next-btn {
+            margin-top: 0px;
+            margin-left: 5%;
+            padding: 20px 60px;
+            background: linear-gradient(#c21c00, #7a0c00);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            font-family: 'Libre Baskerville', serif;
+        }
+
+        .side-image .next-btn { display: block; }
+        .container  .next-btn { display: none; }
+
+        /* ===== STEPS ===== */
+
+        .step-page { display: none; }
+        .step-page.active { display: block; }
+
+        /* ===== CENTER STEP 2, 3 & 4 ===== */
+
+        #step2,
+        #step3,
+        #step4 {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 0px;
+            min-height: 60vh;
+        }
+
+        #step2.active,
+        #step3.active,
+        #step4.active {
+            display: flex;
+        }
+
+        /* inputs & dropdown */
+        #step2 input,
+        #step2 select {
+            padding: 10px 50px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            text-align: center;
+            font-family: 'Libre Baskerville', serif;
+        }
+
+        /* email validation */
+        #emailInput.invalid { border: 2px solid #ff3b3b; }
+
+        #emailError {
+            color: #ff3b3b;
+            font-size: 13px;
+            margin-top: -8px;
+            display: none;
+        }
+
+        /* buttons spacing */
+        #step2 .next-btn,
+        #step3 .next-btn {
+            margin-top: 1%;
+            margin-left: 0%;
+        }
+
+        /* ===== RECEIPT (STEP 4) ===== */
+
+        .receipt-box {
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid #e8c46b;
+            border-radius: 16px;
+            padding: 40px 60px;
+            max-width: 520px;
+            width: 90%;
+            text-align: left;
+            backdrop-filter: blur(8px);
+        }
+
+        .receipt-title-block {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(232,196,107,0.25);
+        }
+
+        .receipt-production {
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: #e8c46b;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 6px;
+        }
+
+        .receipt-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #e8c46b;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            text-shadow: 0 0 24px rgba(232,196,107,0.5);
+            margin: 4px 0;
+        }
+
+        .receipt-subtitle {
+            font-size: 12px;
+            color: #aaa;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+
+        .receipt-box h2 {
+            text-align: center;
+            color: white;
+            margin-top: 0;
+            margin-bottom: 6px;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .receipt-tagline {
+            text-align: center;
+            font-size: 13px;
+            color: #e8c46b;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            gap: 20px;
+        }
+
+        .receipt-row:last-of-type { border-bottom: none; }
+
+        .receipt-label {
+            color: #aaa;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .receipt-value {
+            color: white;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .receipt-seats { color: #e8c46b; font-weight: bold; }
+
+        .receipt-note {
+            text-align: center;
+            font-size: 13px;
+            color: #aaa;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        #step4 .next-btn { margin-top: 24px; margin-left: 0; }
+
+        /* ===== STEP 2 SPACING ===== */
+
+        #step2 { gap: 4px; }
+
+        #step2 .next-btn {
+            margin-top: 5%;
+            margin-bottom: -5%;
+        }
+
+        #step2 input,
+        #step2 select {
+            margin: -1%;
+        }
+
+        /* ===== FLOATING SEAT STRIP ===== */
+
+        .seat-strip {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 14px 30px;
+            border-radius: 20px 20px 0 0;
+            font-size: 16px;
+            z-index: 9999;
+            transition: 0.4s;
+            backdrop-filter: blur(6px);
+        }
+
+        .seat-strip.show { transform: translateX(-50%) translateY(0); }
+
+        /* hide side image for step 2, 3 & 4 */
+        .step-2 .side-image,
+        .step-3 .side-image,
+        .step-4 .side-image {
+            display: none;
+        }
+
+        /* ==========================================================
+           TABLET  (601px – 1100px)
+           ========================================================== */
+        @media (max-width: 1100px) and (min-width: 601px) {
+
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .side-image img {
+                width: 400px;
+                margin-right: 10%;
+                margin-top: -10%;
+            }
+
+            .next-btn {
+                margin-top: 30px;
+                margin-left: 0;
+            }
+
+            .side-image .next-btn { display: block; }
+            .container  .next-btn { display: none; }
+
+            .stage {
+                width: 60%;
+                margin-bottom: -120px;
+                margin-left: 0;
+                margin-top: -100px;
+            }
+
+            .seat-grid {
+                margin-left: 0;
+                gap: 5px;
+            }
+
+            .seat {
+                width: 55px;
+                height: 38px;
+                font-size: 13px;
+            }
+
+            .gap { width: 80px; }
+
+            .walkway-label {
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .walkway-label img { height: 180px; }
+
+            /* steps 2 & 3: fill the screen properly */
+            #step2,
+            #step3,
+            #step4 {
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            #step2 input,
+            #step2 select {
+                width: 80%;
+                padding: 12px 20px;
+                font-size: 17px;
+            }
+        }
+
+        /* ==========================================================
+           MOBILE  (≤ 600px)
+           ========================================================== */
+        @media (max-width: 600px) {
+
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+                padding: 20px 10px;
+                gap: 20px;
+            }
+
+            .side-image img {
+                width: 70%;
+                margin-right: 5%;
+                margin-top: -15%;
+            }
+
+            .side-image .next-btn { display: block; }
+            .container  .next-btn { display: none; }
+
+            /* --- step 1: seats --- */
+            .stage {
+                width: 100%;
+                margin-bottom: -60px;
+                margin-left: 0;
+                margin-top: -70px;
+            }
+
+            .seat-grid {
+                margin-left: 0;
+                gap: 5px;
+            }
+
+            .seat {
+                width: 26.25px;
+                height: 18.75px;
+                font-size: 10px;
+            }
+
+            .gap { width: 10px; }
+
+            .walkway-label img { height: 130px; }
+
+            /* --- steps 2 & 3: full viewport, properly centered --- */
+            #step2,
+            #step3 {
+                min-height: calc(100vh - 65px); /* subtract progress bar height */
+                padding: 30px 20px;
+                box-sizing: border-box;
+                justify-content: center;
+                gap: 12px;
+            }
+
+            #step2 h1,
+            #step3 h1 {
+                font-size: 22px;
+                margin-bottom: 8px;
+            }
+
+            #step3 h4 {
+                font-size: 13px;
+                line-height: 1.7;
+                margin: 0 0 12px;
+            }
+
+            #step2 input,
+            #step2 select {
+                width: 80%;
+                padding: 12px 16px;
+                font-size: 15px;
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            #step2 .next-btn,
+            #step3 .next-btn {
+                margin-top: 16px;
+                margin-left: 0;
+                margin-bottom: 0;
+            }
+
+            /* --- step 4: receipt --- */
+            #step4 {
+                min-height: calc(100vh - 65px);
+                padding: 20px 10px;
+                box-sizing: border-box;
+            }
+
+            .receipt-box {
+                padding: 28px 20px;
+                width: 92%;
+                box-sizing: border-box;
+            }
+
+            .receipt-title {
+                font-size: 26px;
+                letter-spacing: 4px;
+            }
+
+            /* --- buttons --- */
+            .next-btn {
+                padding: 15px 40px;
+                font-size: 16px;
+                margin-top: 0;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="step-1">
+
+    <!-- PROGRESS -->
+    <div class="progress">
+        <div class="step active">1. Choose Seat</div>
+        <div class="line"></div>
+        <div class="step">2. Details</div>
+        <div class="line"></div>
+        <div class="step">3. Payment</div>
+        <div class="line"></div>
+        <div class="step">4. Receipt</div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="main-layout">
+
+        <!-- LEFT -->
+        <div class="container">
+
+            <div id="step1" class="step-page active">
+
+                <img src="{{ url_for('static', filename='img/stage-image_buy.png') }}" class="stage">
+
+                <div class="walkway-label">
+                    <img src="{{ url_for('static', filename='img/walkway-text_buy.png') }}">
+                </div>
+
+                <div class="seat-grid" id="grid"></div>
+
+                <!-- DESKTOP BUTTON -->
+                <button class="next-btn" onclick="goStep(2)">Next</button>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="side-image">
+            <img src="{{ url_for('static', filename='img/side-instructions_buy.png') }}">
+            <!-- MOBILE/TABLET BUTTON -->
+            <button class="next-btn" onclick="goStep(2)">Next</button>
+        </div>
+
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" class="step-page">
+        <h1>Fill in Details</h1>
+        <input id="nameInput" placeholder="Nama Lengkap"><br><br>
+        <input id="phoneInput" placeholder="Nomor Telepon"><br><br>
+        <input id="emailInput" type="email" placeholder="Email"><br>
+        <span id="emailError">Masukkan email yang valid.</span><br>
+        <select>
+            <option>10.1</option>
+            <option>10.2</option>
+            <option>11.1</option>
+            <option>11.2</option>
+            <option>12.1</option>
+            <option>12.2</option>
+            <option>Alumni Atisa</option>
+            <option>Orang Tua Murid</option>
+            <option>Lainnya</option>
+        </select>
+        <button class="next-btn" onclick="goStep(1)">Back</button>
+        <button class="next-btn" onclick="goStep(3)">Next</button>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" class="step-page">
+        <h1>Upload Payment</h1>
+        <h4><i>Silakan lakukan pembayaran secara transfer ke <br>rekening 7615576409 (Bank: Bank Central Asia (BCA)
+                <br>a.n. FIFIANA PADMA KUSUMA). <br><br>Mohon lampirkan bukti transfer di bawah ini.<br></i></h4>
+        <input type="file" id="paymentInput"><br><br>
+        <button class="next-btn" onclick="goStep(2)">Back</button>
+        <button class="next-btn" onclick="submitBooking()">Submit</button>
+    </div>
+
+    <!-- STEP 4 — RECEIPT -->
+    <div id="step4" class="step-page">
+        <div class="receipt-box">
+            <div class="receipt-title-block">
+                <div class="receipt-production">— A Doremi Nation Production —</div>
+                <div class="receipt-title">ENTANGLED</div>
+                <div class="receipt-subtitle">一念入局，万般难解</div>
+            </div>
+
+            <h2>Booking Confirmed!</h2>
+            <div class="receipt-tagline">See you soon, Warrior ⚔️</div>
+
+            <div class="receipt-row">
+                <span class="receipt-label">Name</span>
+                <span class="receipt-value" id="r-name">—</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Phone</span>
+                <span class="receipt-value" id="r-phone">—</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Email</span>
+                <span class="receipt-value" id="r-email">—</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Class</span>
+                <span class="receipt-value" id="r-class">—</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Seats</span>
+                <span class="receipt-value receipt-seats" id="r-seats">—</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Category</span>
+                <span class="receipt-value" id="r-category">—</span>
+            </div>
+            <p class="receipt-note">
+                Detail pemesanan telah dikirim ke email Anda.<br>
+                Bila mana terjadi masalah, panitia akan segera menghubungi Anda via WhatsApp.
+            </p>
+        </div>
+        <button class="next-btn" onclick="location.href='/'">Back to Home</button>
+    </div>
+
+    <script>
+
+        const grid = document.getElementById("grid");
+        let selectedSeats = [];
+
+        function createRow(isTaken = false, letter = "") {
+            let rowDiv = document.createElement("div");
+            rowDiv.classList.add("row");
+
+            for (let c = 1; c <= 10; c++) {
+                if (c === 6) {
+                    let gap = document.createElement("div");
+                    gap.classList.add("gap");
+                    rowDiv.appendChild(gap);
+                }
+
+                let seat = document.createElement("div");
+                seat.classList.add("seat");
+
+                let label = letter ? letter + c : "";
+                seat.innerText = label;
+
+                if (isTaken) {
+                    seat.classList.add("taken");
+                } else {
+                    if ("ABCDE".includes(letter)) {
+                        seat.classList.add("royal");
+                    } else {
+                        seat.classList.add("warrior");
+                    }
+                }
+
+                seat.onclick = () => {
+                    if (seat.classList.contains("taken")) {
+                        alert("Seat sudah diambil!");
+                        return;
+                    }
+
+                    if (selectedSeats.includes(label)) {
+                        selectedSeats = selectedSeats.filter(s => s !== label);
+                        seat.classList.remove("selected");
+                    } else {
+                        selectedSeats.push(label);
+                        seat.classList.add("selected");
+                    }
+
+                    updateSeatStrip();
+                };
+
+                rowDiv.appendChild(seat);
+            }
+
+            grid.appendChild(rowDiv);
+        }
+
+        const preRows = ["", ""];
+        const rows = "ABCDEFGHIJKLMNO".split("");
+
+        preRows.forEach(() => createRow(true));
+        rows.forEach(r => createRow(false, r));
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function goStep(n) {
+            if (n === 2 && selectedSeats.length === 0) {
+                alert("Pilih kursi dulu!");
+                return;
+            }
+
+            if (n === 3) {
+                let name  = document.getElementById("nameInput").value;
+                let phone = document.getElementById("phoneInput").value;
+                let email = document.getElementById("emailInput").value;
+
+                if (!name || !phone) {
+                    alert("Isi data dulu!");
+                    return;
+                }
+
+                const emailInput = document.getElementById("emailInput");
+                const emailError = document.getElementById("emailError");
+
+                if (!isValidEmail(email)) {
+                    emailInput.classList.add("invalid");
+                    emailError.style.display = "block";
+                    return;
+                } else {
+                    emailInput.classList.remove("invalid");
+                    emailError.style.display = "none";
+                }
+            }
+
+            document.querySelectorAll(".step-page").forEach(p => p.classList.remove("active"));
+            document.getElementById("step" + n).classList.add("active");
+
+            document.querySelectorAll(".step").forEach((s, i) => {
+                s.classList.toggle("active", i < n);
+            });
+
+            document.body.className = "step-" + n;
+
+            // scroll to top on step change
+            window.scrollTo(0, 0);
+        }
+
+        function loadTakenSeats() {
+            fetch("/get-taken-seats")
+                .then(res => res.json())
+                .then(seats => {
+                    document.querySelectorAll(".seat").forEach(seatDiv => {
+                        let label = seatDiv.innerText;
+                        if (seats.includes(label)) {
+                            seatDiv.classList.add("taken");
+                            seatDiv.classList.remove("selected");
+                        }
+                    });
+                });
+        }
+
+        loadTakenSeats();
+        setInterval(loadTakenSeats, 3000);
+
+        function showReceipt(name, phone, email, studentClass, seats) {
+            const royalSeats   = seats.filter(s => "ABCDE".includes(s[0]));
+            const warriorSeats = seats.filter(s => !"ABCDE".includes(s[0]));
+
+            let category = [];
+            if (royalSeats.length   > 0) category.push(`Royal (${royalSeats.join(", ")})`);
+            if (warriorSeats.length > 0) category.push(`Warrior (${warriorSeats.join(", ")})`);
+
+            document.getElementById("r-name").innerText     = name;
+            document.getElementById("r-phone").innerText    = phone;
+            document.getElementById("r-email").innerText    = email;
+            document.getElementById("r-class").innerText    = studentClass;
+            document.getElementById("r-seats").innerText    = seats.join(", ");
+            document.getElementById("r-category").innerText = category.join(" · ") || "—";
+
+            document.querySelectorAll(".step-page").forEach(p => p.classList.remove("active"));
+            document.getElementById("step4").classList.add("active");
+
+            document.querySelectorAll(".step").forEach((s, i) => {
+                s.classList.toggle("active", i < 4);
+            });
+
+            document.body.className = "step-4";
+            window.scrollTo(0, 0);
+        }
+
+        function submitBooking() {
+            let name          = document.getElementById("nameInput").value;
+            let phone         = document.getElementById("phoneInput").value;
+            let email         = document.getElementById("emailInput").value;
+            let student_class = document.querySelector("select").value;
+            let file          = document.getElementById("paymentInput").files[0];
+
+            if (!file) {
+                alert("Upload bukti pembayaran!");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("name", name);
+            formData.append("phone", phone);
+            formData.append("email", email);
+            formData.append("student_class", student_class);
+
+            selectedSeats.forEach(seat => {
+                formData.append("seats", seat);
+            });
+
+            formData.append("payment", file);
+
+            fetch("/save-booking", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "error") {
+                    alert("Kursi sudah diambil orang lain!");
+                    location.reload();
+                } else {
+                    showReceipt(name, phone, email, student_class, [...selectedSeats]);
+                    selectedSeats = [];
+                    updateSeatStrip();
+                }
+            })
+            .catch(err => {
+                alert("Pemesanan gagal");
+                console.error(err);
+            });
+        }
+
+        function updateSeatStrip() {
+            const strip = document.getElementById("seatStrip");
+            const list  = document.getElementById("seatList");
+
+            if (selectedSeats.length > 0) {
+                list.innerText = selectedSeats.join(", ");
+                strip.classList.add("show");
+            } else {
+                strip.classList.remove("show");
+            }
+        }
+
+    </script>
+
+    <div id="seatStrip" class="seat-strip">
+        Selected Seats: <span id="seatList"></span>
+    </div>
+
+</body>
+</html>

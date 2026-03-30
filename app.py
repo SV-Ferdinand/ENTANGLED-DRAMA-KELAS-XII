@@ -246,8 +246,8 @@ def save_booking():
     cur = db.cursor()
 
     try:
-    for seat in seats:
-        cur.execute("""
+        for seat in seats:
+            cur.execute("""
             INSERT INTO tickets
             (buyer_name, seat, phone, student_class, created_at, payment_file, payment_method, paid)
             VALUES (?, ?, ?, ?, ?, ?, ?, 0)

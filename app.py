@@ -261,7 +261,7 @@ def save_booking():
             payment_method
         ))
 
-    db.commit()
+db.commit()
 
 except sqlite3.IntegrityError:
     db.rollback()

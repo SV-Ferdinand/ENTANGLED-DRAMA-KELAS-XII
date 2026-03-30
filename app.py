@@ -225,7 +225,7 @@ def save_booking():
 
     name           = request.form.get("name")
     phone          = request.form.get("phone")
-    email          = request.form.get("email")          # ← new
+    email          = request.form.get("email")
     student_class  = request.form.get("student_class")
     payment_method = request.form.get("payment_method")
     seats          = request.form.getlist("seats")
@@ -234,8 +234,8 @@ def save_booking():
     filename = None
 
     if file:
-        os.makedirs("static/uploads", exist_ok=True) 
-        
+        os.makedirs("static/uploads", exist_ok=True)
+
         ext          = os.path.splitext(file.filename)[1]
         raw_filename = f"{name}_{student_class}{ext}"
         filename     = secure_filename(raw_filename)
@@ -245,40 +245,41 @@ def save_booking():
     db  = get_db()
     cur = db.cursor()
 
-try:
-    for seat in seats:
-        cur.execute("""
-            INSERT INTO tickets
-            (buyer_name, seat, phone, student_class, created_at, payment_file, payment_method, paid)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 0)
-        """, (
-            name,
-            seat,
-            phone,
-            student_class,
-            datetime.now().isoformat(),
-            filename,
-            payment_method
-        ))
+    try:   # ✅ sekarang sudah masuk ke function
+        for seat in seats:
+            cur.execute("""
+                INSERT INTO tickets
+                (buyer_name, seat, phone, student_class, created_at, payment_file, payment_method, paid)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+            """, (
+                name,
+                seat,
+                phone,
+                student_class,
+                datetime.now().isoformat(),
+                filename,
+                payment_method
+            ))
 
-    db.commit()
+        db.commit()
 
-except sqlite3.IntegrityError:
-    db.rollback()
-    return jsonify({"status": "error", "message": "Seat already taken!"}), 400
+    except sqlite3.IntegrityError:
+        db.rollback()
+        db.close()
+        return jsonify({"status": "error", "message": "Seat already taken!"}), 400
 
-except Exception as e:
-    db.rollback()
-    print("ERROR SAVE BOOKING:", e)
-    return jsonify({"status": "error", "message": str(e)}), 500
+    except Exception as e:
+        db.rollback()
+        db.close()
+        print("ERROR SAVE BOOKING:", e)
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-db.close()
+    db.close()
 
-# Send confirmation email
-if email:
-    send_confirmation_email(email, name, phone, student_class, seats)
+    if email:
+        send_confirmation_email(email, name, phone, student_class, seats)
 
-return jsonify({"status": "success"})
+    return jsonify({"status": "success"})
 
 
 # ===== RUN =====

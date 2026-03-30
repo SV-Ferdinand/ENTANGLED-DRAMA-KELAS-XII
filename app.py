@@ -234,6 +234,8 @@ def save_booking():
     filename = None
 
     if file:
+        os.makedirs("static/uploads", exist_ok=True) 
+        
         ext          = os.path.splitext(file.filename)[1]
         raw_filename = f"{name}_{student_class}{ext}"
         filename     = secure_filename(raw_filename)
@@ -267,6 +269,12 @@ def save_booking():
         return jsonify({"status": "error", "message": "Seat already taken!"}), 400
 
     db.close()
+
+    except Exception as e:
+    db.rollback()
+    db.close()
+    print("ERROR SAVE BOOKING:", e)  
+    return jsonify({"status": "error", "message": str(e)}), 500
 
     # Send confirmation email (non-blocking — booking already saved above)
     if email:

@@ -246,41 +246,41 @@ def save_booking():
     cur = db.cursor()
 
     try:
-        for seat in seats:
-            cur.execute("""
-                INSERT INTO tickets
-                (buyer_name, seat, phone, student_class, created_at, payment_file, payment_method, paid)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 0)
-            """, (
-                name,
-                seat,
-                phone,
-                student_class,
-                datetime.now().isoformat(),
-                filename,
-                payment_method
-            ))
+    for seat in seats:
+        cur.execute("""
+            INSERT INTO tickets
+            (buyer_name, seat, phone, student_class, created_at, payment_file, payment_method, paid)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+        """, (
+            name,
+            seat,
+            phone,
+            student_class,
+            datetime.now().isoformat(),
+            filename,
+            payment_method
+        ))
 
-        db.commit()
+    db.commit()
 
-    except sqlite3.IntegrityError:
+except sqlite3.IntegrityError:
     db.rollback()
     db.close()
     return jsonify({"status": "error", "message": "Seat already taken!"}), 400
 
-    except Exception as e:
+except Exception as e:
     db.rollback()
     db.close()
     print("ERROR SAVE BOOKING:", e)
     return jsonify({"status": "error", "message": str(e)}), 500
 
-    db.close()
+db.close()
 
-    # Send confirmation email (non-blocking — booking already saved above)
-    if email:
-        send_confirmation_email(email, name, phone, student_class, seats)
+# Send confirmation email
+if email:
+    send_confirmation_email(email, name, phone, student_class, seats)
 
-    return jsonify({"status": "success"})
+return jsonify({"status": "success"})
 
 
 # ===== RUN =====

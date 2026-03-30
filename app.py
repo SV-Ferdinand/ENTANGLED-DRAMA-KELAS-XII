@@ -265,12 +265,10 @@ def save_booking():
 
 except sqlite3.IntegrityError:
     db.rollback()
-    db.close()
     return jsonify({"status": "error", "message": "Seat already taken!"}), 400
 
 except Exception as e:
     db.rollback()
-    db.close()
     print("ERROR SAVE BOOKING:", e)
     return jsonify({"status": "error", "message": str(e)}), 500
 
